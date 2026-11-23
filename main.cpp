@@ -6,10 +6,11 @@
 using namespace std;
 
 //Functions
-void mainMenu(int choice);
+void mainMenu(int choice, string categories[], string names[], double prices[], int quantities[], int index);
 int mainMenuChoice();
 bool readFile(string categories[], string names[], double prices[], int quantities[], int &index);
 int getNumber();
+void showAll(string categories[], string names[], double prices[], int quantities[], int index);
 
 
 int main() {
@@ -27,7 +28,7 @@ int main() {
 
     while (true) {
         choice = mainMenuChoice();
-        mainMenu(choice);
+        mainMenu(choice, categories, names, prices, quantities, index);
 
         if (choice == 7) {
             break;
@@ -37,11 +38,11 @@ int main() {
     return 0;
 }
 
-void mainMenu(int choice) {
+void mainMenu(int choice, string categories[], string names[], double prices[], int quantities[], int index) {
 
     switch (choice) {
         case 1:
-            cout << "Visos prekes\n";
+            showAll(categories, names, prices, quantities, index);
             break;
 
         case 2:
@@ -71,6 +72,19 @@ void mainMenu(int choice) {
         default:
             cout << "Neteisingas pasirinkimas.\n";
             break;
+    }
+}
+
+ void showAll(string categories[], string names[], double prices[], int quantities[], int index) {
+    cout << "\n--- Visos prekes ---\n";
+
+    for (int i = 0; i < index; i++) {
+        cout << i + 1 << ". "
+             << categories[i] << " | "
+             << names[i] << " | "
+             << prices[i] << " Eur | "
+             << quantities[i] << " vnt. | "
+             << "Suma: " << prices[i] * quantities[i] << " Eur\n";
     }
 }
 
