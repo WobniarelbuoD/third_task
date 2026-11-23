@@ -18,6 +18,8 @@ void showByCategory(string categories[], string names[], double prices[], int qu
 double getTotal(double prices[], int quantities[], int index);
 void showTotal(double prices[], int quantities[], int index);
 void showTotalsByCategory(string categories[], double prices[], int quantities[], int index);
+void showReport(string categories[], string names[], double prices[], int quantities[], int index);
+void saveReport(string categories[], string names[], double prices[], int quantities[], int index);
 
 
 int main() {
@@ -65,11 +67,11 @@ void mainMenu(int choice, string categories[], string names[], double prices[], 
             break;
 
         case 5:
-            cout << "Ataskaita\n";
+            showReport(categories, names, prices, quantities, index);
             break;
 
         case 6:
-            cout << "Ataskaitos issaugojimas\n";
+            saveReport(categories, names, prices, quantities, index);
             break;
 
         case 7:
@@ -187,12 +189,59 @@ void showTotalsByCategory(string categories[], double prices[], int quantities[]
 
         for (int j = 0; j < index; j++) {
             if (categories[j] == availableCategories[i]) {
-                categoryTotal += prices[j] * quantities[j];
+                double itemTotal = prices[j] * quantities[j];
+                categoryTotal += itemTotal - itemTotal * 0.10;
             }
         }
 
         cout << availableCategories[i] << ": " << fixed << setprecision(2) << categoryTotal << " Eur\n";
     }
+}
+
+void showReport(string categories[], string names[], double prices[], int quantities[], int index) {
+    double total = 0;
+    double totalDiscount = 0;
+    cout << "\n--- Visa uzsakymo ataskaita ---\n\n";
+
+    for (int i = 0; i < index; i++) {
+        double itemTotal = prices[i] * quantities[i];
+        double discount = itemTotal * 0.10;
+        double finalItemTotal = itemTotal - discount;
+        cout << i + 1 << ". "
+            << categories[i] << " | "
+            << names[i] << " | "
+            << fixed << setprecision(2)
+            << prices[i] << " Eur | "
+            << quantities[i] << " vnt. | "
+            << "Suma: " << itemTotal << " Eur | "
+            << "Nuolaida: " << discount << " Eur | "
+            << "Po nuolaidos: " << finalItemTotal << " Eur\n";
+        total += itemTotal;
+        totalDiscount += discount;
+    }
+
+    cout << "\n--- Sumos pagal kategorijas ---\n";
+    string availableCategories[100];
+    int categoryCount = getAvailableCategories(categories, availableCategories, index);
+
+    for (int i = 0; i < categoryCount; i++) {
+        double categoryTotal = 0;
+
+        for (int j = 0; j < index; j++) {
+            if (categories[j] == availableCategories[i]) {
+                double itemTotal = prices[j] * quantities[j];
+                categoryTotal += itemTotal - itemTotal * 0.10;
+            }
+        }
+
+        cout << availableCategories[i] << ": " << categoryTotal << " Eur\n";
+    }
+
+    double finalTotal = total - totalDiscount;
+    cout << "\n--- Galutines sumos ---\n";
+    cout << "Suma pries nuolaida: " << total << " Eur\n";
+    cout << "Bendra nuolaida: " << totalDiscount << " Eur\n";
+    cout << "Galutine moketina suma: " << finalTotal << " Eur\n";
 }
 
 int mainMenuChoice() {
@@ -240,14 +289,10 @@ bool readFile(string categories[], string names[], double prices[], int quantiti
 
         stringstream data(line);
 
-        if (!getline(data, categories[i], ';') ||
-            !getline(data, names[i], ';') ||
-            !getline(data, priceText, ';') ||
-            !getline(data, quantityText)) {
-
+        if (!getline(data, categories[i], ';') || !getline(data, names[i], ';') || !getline(data, priceText, ';') || !getline(data, quantityText)) {
             cout << "Neteisingas failo formatas.\n";
             return false;
-            }
+        }
 
         stringstream priceStream(priceText);
         stringstream quantityStream(quantityText);
@@ -262,24 +307,80 @@ bool readFile(string categories[], string names[], double prices[], int quantiti
             return false;
         }
 
-        if (categories[i] != "Dviraciai" &&
-            categories[i] != "Dalys" &&
-            categories[i] != "Aksesuarai") {
-
+        if (categories[i] != "Dviraciai" && categories[i] != "Dalys" && categories[i] != "Aksesuarai") {
             cout << "Neteisinga kategorija: " << categories[i] << endl;
             return false;
-            }
+        }
     }
 
     file.close();
     return true;
 }
 
+void saveReport(string categories[], string names[], double prices[], int quantities[], int index) {
+    ofstream file("ataskaita.txt");
+
+    if (!file.is_open()) {
+        cout << "Nepavyko atidaryti ataskaita.txt failo.\n";
+        return;
+    }
+
+    double total = 0;
+    double totalDiscount = 0;
+    file << fixed << setprecision(2);
+    file << "--- Visa uzsakymo ataskaita ---\n\n";
+
+    for (int i = 0; i < index; i++) {
+        double itemTotal = prices[i] * quantities[i];
+        double discount = itemTotal * 0.10;
+        double finalItemTotal = itemTotal - discount;
+        file << i + 1 << ". "
+             << categories[i] << " | "
+             << names[i] << " | "
+             << prices[i] << " Eur | "
+             << quantities[i] << " vnt. | "
+             << "Suma: " << itemTotal << " Eur | "
+             << "Nuolaida: " << discount << " Eur | "
+             << "Po nuolaidos: " << finalItemTotal << " Eur\n";
+        total += itemTotal;
+        totalDiscount += discount;
+    }
+
+    string availableCategories[100];
+    int categoryCount = getAvailableCategories(categories, availableCategories, index);
+    file << "\n--- Sumos pagal kategorijas ---\n";
+
+    for (int i = 0; i < categoryCount; i++) {
+        double categoryTotal = 0;
+        for (int j = 0; j < index; j++) {
+            if (categories[j] == availableCategories[i]) {
+                double itemTotal = prices[j] * quantities[j];
+                categoryTotal += itemTotal - itemTotal * 0.10;
+            }
+        }
+
+        file << availableCategories[i] << ": " << categoryTotal << " Eur\n";
+    }
+
+    double finalTotal = total - totalDiscount;
+    file << "\n--- Galutines sumos ---\n";
+    file << "Suma pries nuolaida: " << total << " Eur\n";
+    file << "Bendra nuolaida: " << totalDiscount << " Eur\n";
+    file << "Galutine moketina suma: " << finalTotal << " Eur\n";
+    file.close();
+
+    if (file.fail()) {
+        cout << "Nepavyko issaugoti ataskaitos.\n";
+    } else {
+        cout << "Ataskaita issaugota i ataskaita.txt.\n";
+    }
+}
+
 int getNumber() {
     int number;
 
     while (!(cin >> number)) {
-        cout << "iveskite skaičiu: ";
+        cout << "iveskite skaiciu: ";
         cin.clear();
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
