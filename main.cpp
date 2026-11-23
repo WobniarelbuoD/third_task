@@ -15,6 +15,10 @@ void showAll(string categories[], string names[], double prices[], int quantitie
 int getAvailableCategories(string categories[], string availableCategories[], int index);
 string categoryMenu(string categories[], int index);
 void showByCategory(string categories[], string names[], double prices[], int quantities[], int index);
+double getTotal(double prices[], int quantities[], int index);
+void showTotal(double prices[], int quantities[], int index);
+void showTotalsByCategory(string categories[], double prices[], int quantities[], int index);
+
 
 int main() {
     int choice;
@@ -53,11 +57,11 @@ void mainMenu(int choice, string categories[], string names[], double prices[], 
             break;
 
         case 3:
-            cout << "Uzsakymo suma\n";
+            showTotal(prices, quantities, index);
             break;
 
         case 4:
-            cout << "Suma pagal kategorija\n";
+            showTotalsByCategory(categories, prices, quantities, index);
             break;
 
         case 5:
@@ -143,6 +147,7 @@ int getAvailableCategories(string categories[], string availableCategories[], in
 void showByCategory(string categories[], string names[], double prices[],int quantities[], int index) {
     string category = categoryMenu(categories, index);
     cout << "\n--- " << category << " ---\n";
+
     for (int i = 0; i < index; i++) {
         if (categories[i] == category) {
             cout << names[i] << " | "
@@ -151,6 +156,42 @@ void showByCategory(string categories[], string names[], double prices[],int qua
             << quantities[i] << " vnt. | "
             << "Suma: " << prices[i] * quantities[i] << " Eur\n";
         }
+    }
+}
+
+double getTotal(double prices[], int quantities[], int index) {
+    double total = 0;
+
+    for (int i = 0; i < index; i++) {
+        total += prices[i] * quantities[i];
+    }
+
+    return total;
+}
+
+void showTotal(double prices[], int quantities[], int index) {
+    double total = getTotal(prices, quantities, index);
+
+    cout << "\n--- Uzsakymo suma ---\n";
+    cout << fixed << setprecision(2)
+         << "Bendra suma: " << total << " Eur\n";
+}
+
+void showTotalsByCategory(string categories[], double prices[], int quantities[], int index) {
+    string availableCategories[100];
+    int categoryCount = getAvailableCategories(categories, availableCategories, index);
+    cout << "\n--- Sumos pagal kategorijas ---\n";
+
+    for (int i = 0; i < categoryCount; i++) {
+        double categoryTotal = 0;
+
+        for (int j = 0; j < index; j++) {
+            if (categories[j] == availableCategories[i]) {
+                categoryTotal += prices[j] * quantities[j];
+            }
+        }
+
+        cout << availableCategories[i] << ": " << fixed << setprecision(2) << categoryTotal << " Eur\n";
     }
 }
 
