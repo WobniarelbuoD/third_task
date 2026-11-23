@@ -2,6 +2,7 @@
 #include <fstream>
 #include <limits>
 #include <sstream>
+#include <iomanip>
 
 using namespace std;
 
@@ -11,7 +12,9 @@ int mainMenuChoice();
 bool readFile(string categories[], string names[], double prices[], int quantities[], int &index);
 int getNumber();
 void showAll(string categories[], string names[], double prices[], int quantities[], int index);
-
+int getAvailableCategories(string categories[], string availableCategories[], int index);
+string categoryMenu(string categories[], int index);
+void showByCategory(string categories[], string names[], double prices[], int quantities[], int index);
 
 int main() {
     int choice;
@@ -46,7 +49,7 @@ void mainMenu(int choice, string categories[], string names[], double prices[], 
             break;
 
         case 2:
-            cout << "Prekes pagal kategorija\n";
+            showByCategory(categories, names, prices, quantities, index);
             break;
 
         case 3:
@@ -75,16 +78,79 @@ void mainMenu(int choice, string categories[], string names[], double prices[], 
     }
 }
 
- void showAll(string categories[], string names[], double prices[], int quantities[], int index) {
-    cout << "\n--- Visos prekes ---\n";
+string categoryMenu(string categories[], int index) {
+    string availableCategories[100];
+
+    int categoryCount = getAvailableCategories(
+        categories,
+        availableCategories,
+        index
+    );
+
+    while (true) {
+        cout << "\n--- Pasirinkite kategorija ---\n";
+
+        for (int i = 0; i < categoryCount; i++) {
+            cout << i + 1 << ". " << availableCategories[i] << endl;
+        }
+
+        cout << "Pasirinkimas: ";
+        int choice = getNumber();
+
+        if (choice >= 1 && choice <= categoryCount) {
+            return availableCategories[choice - 1];
+        }
+
+        cout << "Neteisingas pasirinkimas.\n";
+    }
+}
+
+int getAvailableCategories(string categories[], string availableCategories[], int index) {
+    int categoryCount = 0;
 
     for (int i = 0; i < index; i++) {
+        bool exists = false;
+
+        for (int j = 0; j < categoryCount; j++) {
+            if (categories[i] == availableCategories[j]) {
+                exists = true;
+                break;
+            }
+        }
+
+        if (!exists) {
+            availableCategories[categoryCount] = categories[i];
+            categoryCount++;
+        }
+    }
+
+    return categoryCount;
+}
+
+ void showAll(string categories[], string names[], double prices[], int quantities[], int index) {
+    cout << "\n--- Visos prekes ---\n";
+    for (int i = 0; i < index; i++) {
         cout << i + 1 << ". "
-             << categories[i] << " | "
-             << names[i] << " | "
-             << prices[i] << " Eur | "
-             << quantities[i] << " vnt. | "
-             << "Suma: " << prices[i] * quantities[i] << " Eur\n";
+            << categories[i] << " | "
+            << names[i] << " | "
+            << fixed << setprecision(2)
+            << prices[i] << " Eur | "
+            << quantities[i] << " vnt. | "
+            << "Suma: " << prices[i] * quantities[i] << " Eur\n";
+    }
+}
+
+void showByCategory(string categories[], string names[], double prices[],int quantities[], int index) {
+    string category = categoryMenu(categories, index);
+    cout << "\n--- " << category << " ---\n";
+    for (int i = 0; i < index; i++) {
+        if (categories[i] == category) {
+            cout << names[i] << " | "
+            << fixed << setprecision(2)
+            << prices[i] << " Eur | "
+            << quantities[i] << " vnt. | "
+            << "Suma: " << prices[i] * quantities[i] << " Eur\n";
+        }
     }
 }
 
